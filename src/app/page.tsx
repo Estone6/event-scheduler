@@ -1,9 +1,17 @@
-import Calendar from "src/components/Calendar";
+import { generateDays } from "../utils/daysUtils";
+import Calendar from "../components/Calendar"; // Import the Client Component
 
-export default function Home() {
+export default async function Home() {
+  const currentDate = new Date();
+
+  const initialDays = generateDays(currentDate);
+
   return (
-    <div className="">
-      <Calendar />
+    <div>
+      <Calendar
+        initialDays={initialDays}
+        currentDate={currentDate.toISOString()}
+      />
     </div>
   );
 }

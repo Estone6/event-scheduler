@@ -1,44 +1,48 @@
-"use client";
-import { addMonths, format, subMonths } from "date-fns";
-import { useMemo, useState } from "react";
-import { CalendarHeader } from "./CalendarHeader";
+"use client"; // Mark this as a client-side component
+
+import { useState, useMemo, useEffect } from "react";
+import { addMonths, subMonths, format } from "date-fns";
 import { Days } from "./Days";
-import { EventModal } from "./Modal/EventModal";
+import { CalendarHeader } from "./CalendarHeader";
+import { generateDays } from "../utils/daysUtils";
 
-export default function Calendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+interface Day {
+  date: string;
+  isCurrentMonth: boolean;
+  isToday?: boolean;
+}
 
-  // Handles month navigation based on the direction passed
-  const handleMonthChange = (direction: "previous" | "current" | "next") => {
-    setCurrentDate((prevDate) => {
-      switch (direction) {
-        case "previous":
-          return subMonths(prevDate, 1);
-        case "next":
-          return addMonths(prevDate, 1);
-        case "current":
-        default:
-          return new Date();
-      }
-    });
-  };
+interface Props {
+  initialDays: Day[];
+  currentDate: string;
+}
 
-  // Memoize the formatted current month to avoid reformatting unnecessarily
-  const currentMonth = useMemo(
-    () => format(currentDate, "MMMM yyyy"),
-    [currentDate],
-  );
+export default function Calendar({ initialDays, currentDate }: Props) {
+  const [date, setDate] = useState(new Date(currentDate));
+  const [days, setDays] = useState(initialDays);
+  console.log(date);
+
+  const generatedDays = useMemo(() => generateDays(date), [date]);
+
+  useEffect(() => {
+    setDays(generatedDays);
+  }, [generatedDays]);
+
+  const goToPreviousMonth = () => setDate(subMonths(date, 1));
+  const goToNextMonth = () => setDate(addMonths(date, 1));
+  const goToCurrentMonth = () => setDate(new Date());
+
+  const formattedMonth = format(date, "MMMM yyyy");
 
   return (
     <div className="lg:flex lg:h-full lg:flex-col">
       <CalendarHeader
-        currentMonth={currentMonth}
-        goToPreviousMonth={() => handleMonthChange("previous")}
-        goToCurrentMonth={() => handleMonthChange("current")}
-        goToNextMonth={() => handleMonthChange("next")}
+        currentMonth={formattedMonth}
+        goToPreviousMonth={goToPreviousMonth}
+        goToNextMonth={goToNextMonth}
+        goToCurrentMonth={goToCurrentMonth}
       />
-      <Days currentDate={currentDate} />
-      <EventModal />
+      <Days days={days} />
     </div>
   );
 }
